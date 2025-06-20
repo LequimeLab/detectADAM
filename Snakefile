@@ -1,7 +1,8 @@
-configfile: "config.yml"
+configfile: "config.yaml"
 
 import glob
-import os 
+
+
 def is_paired(wildcards):
     dir = checkpoints.convert_sra.get(sample=wildcards.sample).output[0]
     return bool(
@@ -14,48 +15,22 @@ def get_accessions(config):
     with open(accession_file) as f:
         return [line.strip() for line in f if line.strip()]
 
-
-def unmasked_reference(wildcards):   
-    files = glob.glob("reference/*.fna")
-    if len(files) == 0:
-        return ""
-    elif len(files) == 1:
-        return files[0]
-    else:
-        combined_path = "reference/combined.fna"
-        # Only combine if combined_path doesn't already exist, to avoid unnecessary writes
-        if not os.path.exists(combined_path):
-            with open(combined_path, "w") as outfile:
-                for fname in files:
-                    with open(fname) as infile:
-                        outfile.write(infile.read())
-        return combined_path
-
-def get_references():
-    if config.get("eve_masking", False):
-        return "masked_reference/masked_ref.fna"
-    else:
-        return unmasked_reference()
-
-def get_eve(wildcards):
-    eve_files = glob.glob("eve_files/*.fna")
-    return eve_files
-    
 accessions = get_accessions(config)
-references = unmasked_reference("anything")
-eve_files = get_eve("anything")
+references = config["reference"]
+eve_files = config["eves"]
+index_files = ["bowtie2_index/index.{}.bt2".format(ext) for ext in [1,2,3,4,"rev.1","rev.2"]]
 
-if not config["mask"]["eve_masking"]:
-    ruleorder: index_host_bowtie2 > index_masked_ref
-else:
-    ruleorder: index_masked_ref > index_host_bowtie2
-
-if not config["reference"]["present"]:
-    ruleorder: skip_map_paired > map_reads_bowtie2_paired
-    ruleorder: skip_map_single > map_reads_bowtie2_single
-else:
+if config["reference"]:
     ruleorder: map_reads_bowtie2_paired > skip_map_paired
     ruleorder: map_reads_bowtie2_single > skip_map_single
+
+    if config["eves"]:
+        ruleorder: index_masked_ref > index_host_bowtie2
+    else:
+        ruleorder: index_host_bowtie2 > index_masked_ref
+else:
+    ruleorder: skip_map_paired > map_reads_bowtie2_paired
+    ruleorder: skip_map_single > map_reads_bowtie2_single
 
 
 rule all:
@@ -82,7 +57,7 @@ checkpoint convert_sra:
 
 rule prefetch_accession:
     output:
-        sra="SRA_folder/{sample}/{sample}.sra"
+        sra=temp("SRA_folder/{sample}/{sample}.sra")
     shell:
         """
         prefetch {wildcards.sample} -O SRA_folder/
@@ -90,8 +65,8 @@ rule prefetch_accession:
 
 rule map_eves_to_ref:
     params:
-        eve_files=get_eve,
-        references=get_references
+        eve_files=config["eves"],
+        references=config["reference"]
     output:
         paf_file=temp("paf/eve.paf")
     threads: 4
@@ -114,7 +89,7 @@ rule mask_ref:
     input:
         bed_file="bed/eve.bed"
     params:
-    	references=get_references
+    	references=config["reference"]
     output:
         masked_ref="masked_reference/masked_ref.fna"
     shell:
@@ -125,30 +100,28 @@ rule index_masked_ref:
     input: 
        ref="masked_reference/masked_ref.fna"
     output:
-        directory("bowtie2_index")
+        index=index_files
     log:
         "logs/index_masked_bowtie2.log"
     shell:
         """
-        mkdir -p {output}
         mkdir -p logs
         echo "Building index with references: {input.ref}" > {log}
-        bowtie2-build {input.ref} {output}/index >> {log} 2>&1
+        bowtie2-build {input.ref} bowtie2_index/index >> {log} 2>&1
         """
         
 rule index_host_bowtie2:
     params:
-        references=unmasked_reference
+        references=config["reference"]
     output:
-        directory("bowtie2_index")
+        index=index_files
     log:
         "logs/index_host_bowtie2.log"
     shell:
         """
-        mkdir -p {output}
         mkdir -p logs
         echo "Building index with references: {params.references}" > {log}
-        bowtie2-build {params.references} {output}/index >> {log} 2>&1
+        bowtie2-build {params.references} bowtie2_index/index >> {log} 2>&1
         """
 
 rule map_reads_bowtie2_paired:
@@ -157,9 +130,9 @@ rule map_reads_bowtie2_paired:
         trimmed_reverse="trimmed_paired/{sample}_2.fq",
         index_files=expand("bowtie2_index/index.{ext}.bt2", ext=[1,2,3,4,"rev.1","rev.2"])
     output:
-        sam="bowtie2_aligned_paired/{sample}.sam",
-        fq1="bowtie2_aligned_paired/{sample}_unconc_1.fq",
-        fq2="bowtie2_aligned_paired/{sample}_unconc_2.fq"
+        sam=temp("bowtie2_aligned_paired/{sample}.sam"),
+        fq1=temp("bowtie2_aligned_paired/{sample}_unconc.1.fq"),
+        fq2=temp("bowtie2_aligned_paired/{sample}_unconc.2.fq")
     params:
         unc="bowtie2_aligned_paired/{sample}_unconc.fq",
         index_prefix="bowtie2_index/index"
@@ -181,22 +154,26 @@ rule skip_map_paired:
         trimmed_forward="trimmed_paired/{sample}_1.fq",
         trimmed_reverse="trimmed_paired/{sample}_2.fq"
     output:
-        fq1="bowtie2_aligned_paired/{sample}_unconc_1.fq",
-        fq2="bowtie2_aligned_paired/{sample}_unconc_2.fq"
+        fq1=temp("bowtie2_aligned_paired/{sample}_unconc_1.fq"),
+        fq2=temp("bowtie2_aligned_paired/{sample}_unconc_2.fq"),
+        sam=temp("bowtie2_aligned_paired/{sample}.sam")
     shell:
         """
         cp {input.trimmed_forward} {output.fq1}
         cp {input.trimmed_reverse} {output.fq2}
+        touch {output.sam}
         """
 
 rule skip_map_single:
     input:
         trimmed_single="trimmed_single/{sample}.fq"
     output:
-        single_skip="bowtie2_aligned_single/{sample}_unconc.fq"
+        single_skip=temp("bowtie2_aligned_single/{sample}_unconc.fq"),
+        sam=temp("bowtie2_aligned_single/{sample}.sam")
     shell:
         """
         cp {input.trimmed_single} {output.single_skip}
+        touch {output.sam}
         """
 
 rule trim_reads_fastp_paired:
@@ -204,10 +181,10 @@ rule trim_reads_fastp_paired:
         forward="FASTQ_folder/{sample}/{sample}_1.fastq",
         reverse_reads="FASTQ_folder/{sample}/{sample}_2.fastq"
     output:
-        trimmed_forward="trimmed_paired/{sample}_1.fq",
-        trimmed_reverse="trimmed_paired/{sample}_2.fq",
-        report_html="trimmed_paired/{sample}_report.html",
-        report_json="trimmed_paired/{sample}_report.json"
+        trimmed_forward=temp("trimmed_paired/{sample}_1.fq"),
+        trimmed_reverse=temp("trimmed_paired/{sample}_2.fq"),
+        report_html=temp("trimmed_paired/{sample}_report.html"),
+        report_json=temp("trimmed_paired/{sample}_report.json")
     params:
         quality=20,
         min_length=25,
@@ -227,8 +204,8 @@ rule map_reads_bowtie2_single:
         trimmed_single="trimmed_single/{sample}.fq",
         index=expand("bowtie2_index/index.{ext}.bt2", ext=[1,2,3,4,"rev.1","rev.2"])
     output:
-        sam="bowtie2_aligned_single/{sample}.sam",
-        fq_s="bowtie2_aligned_single/{sample}_unconc.fq"
+        sam=temp("bowtie2_aligned_single/{sample}.sam"),
+        fq_s=temp("bowtie2_aligned_single/{sample}_unconc.fq")
     params:
         unc="bowtie2_aligned_single/{sample}_unconc.fq"
     threads: 30
@@ -246,9 +223,9 @@ rule trim_reads_fastp_single:
     input:
         single="FASTQ_folder/{sample}/{sample}.fastq"
     output:
-        trimmed_single="trimmed_single/{sample}.fq",
-        report_html="trimmed_single/{sample}_report.html",
-        report_json="trimmed_single/{sample}_report.json"
+        trimmed_single=temp("trimmed_single/{sample}.fq"),
+        report_html=temp("trimmed_single/{sample}_report.html"),
+        report_json=temp("trimmed_single/{sample}_report.json")
     params:
         quality=20,
         min_length=25,
@@ -283,8 +260,8 @@ rule megahit_assembly_single:
 
 rule megahit_assembly_paired:
     input:
-        forward="bowtie2_aligned_paired/{sample}_unconc_1.fq",
-        reverse_reads="bowtie2_aligned_paired/{sample}_unconc_2.fq"
+        forward="bowtie2_aligned_paired/{sample}_unconc.1.fq",
+        reverse_reads="bowtie2_aligned_paired/{sample}_unconc.2.fq"
     output:
         "megahit_results_paired/{sample}/final.contigs.fa"
     log:
@@ -314,3 +291,4 @@ rule diamond:
         --out {output} --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
         --threads {threads}
         """
+

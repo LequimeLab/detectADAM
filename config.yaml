@@ -1,0 +1,7 @@
+accession_file: /pathway/to/accession/txt/file ##required
+diamond_db: /pathway/to/diamond/database ##required
+eves: "/pathway/to/eve/file" # file of all EVEs that should be masked from references
+reference: "pathway/to/reference/file(s)" # if you have multiple reference, concatenate them into one file
+
+
+
