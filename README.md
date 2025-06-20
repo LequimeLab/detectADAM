@@ -44,5 +44,5 @@ The pipeline produces following output
 
 # **About**
 
-detectADAM was developed as a masters project by C. Bos under the guidance of T. Hackl, S. Lequime & S. van der Meij, while studying at the Rijksuniversiteit of Groningen 2025. 
+detectADAM was developed as a masters project by C. Bos under the guidance of T. Hackl, S. Lequime & S. van der Meij, at the Rijksuniversiteit of Groningen 2025. 
 
