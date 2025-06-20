@@ -35,7 +35,7 @@ else:
 
 rule all:
     input:
-        expand("diamond_results/{sample}.csv", sample=accessions)
+        expand("diamond_results/{sample}.tsv", sample=accessions)
 
 
 checkpoint convert_sra:
@@ -283,12 +283,12 @@ rule diamond:
             otherwise="megahit_results_single/{sample}/final.contigs.fa"
         )
     output:
-        "diamond_results/{sample}.csv"
+        "diamond_results/{sample}.tsv"
     threads: 16
     shell:
         """
         diamond blastx --query {input} --db {config[diamond_db]} \
-        --out {output} --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+        --out {output} --outfmt 6 qseqid sseqid stitle pident length mismatch gapopen qstart qend sstart send evalue bitscore \
         --threads {threads}
         """
 

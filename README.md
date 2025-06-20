@@ -32,7 +32,7 @@ mamba env update --file envs/envs.yml
 
 # Update config file (if required)
 nano config.yaml
-##config file is in this format, please enter necessary paths
+##config file is in the below format, please enter necessary paths
 accession_file: /pathway/to/accession/txt/file ##REQUIRED
 diamond_db: /pathway/to/diamond/database ##REQUIRED
 eves: "/pathway/to/eve/file" # file of all EVEs that should be masked from references
@@ -50,5 +50,5 @@ The pipeline produces following output
 
 # **About**
 
-detectADAM was developed as a masters project by C. Bos under the guidance of T. Hackl, S. Lequime & S. van der Meij, at the Rijksuniversiteit of Groningen 2025. 
+detectADAM was developed as a masters project by C. Bos under the guidance of T. Hackl, S. Lequime & S. van der Meij, at the Rijksuniversiteit Groningen 2025. 
 
