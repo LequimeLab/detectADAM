@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="figures/detectADAM.png" alt="detectADAM logo" width="300"/>
+  <img src="figures/detectADAM.png" alt="detectADAM logo" width="500"/>
 </p>
 
 # detectADAM
@@ -10,7 +10,7 @@ detectADAM (Accession Driven Analysis and Mining) is a Snakemake-based pipeline 
 Workflow
 
 <p align="center">
-  <img src="figures/flowchart.png" alt="workflow" width="300"/>
+  <img src="figures/flowchart.png" alt="workflow" width="800"/>
 </
 
 Reccomended input for the eve file for masking is the .fna output of the pipeline detectEVE (https://github.com/thackl/detectEVE)
