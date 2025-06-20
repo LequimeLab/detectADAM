@@ -31,6 +31,12 @@ mamba activate detectADAM
 mamba env update --file envs/envs.yml
 
 # Update config file (if required)
+nano config.yaml
+##config file is in this format, please enter necessary paths
+accession_file: /pathway/to/accession/txt/file ##REQUIRED
+diamond_db: /pathway/to/diamond/database ##REQUIRED
+eves: "/pathway/to/eve/file" # file of all EVEs that should be masked from references
+reference: "pathway/to/reference/file(s)" # if you have multiple reference, concatenate them into one file
 
 # Run Snakemake
 snakemake -c <# of cores>  # e.g. 1 / 8 / all
