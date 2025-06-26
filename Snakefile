@@ -288,7 +288,7 @@ rule diamond:
     shell:
         """
         diamond blastx --query {input} --db {config[diamond_db]} \
-        --out {output} --outfmt 6 qseqid sseqid stitle pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+        --out {output} --outfmt 6 qseqid sseqid stitle pident length mismatch gapopen qstart qend sstart send evalue bitscore sscinames staxids \
         --threads {threads}
         """
 
