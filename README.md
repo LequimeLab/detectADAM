@@ -28,7 +28,7 @@ cd detectADAM
 # Install dependencies via mamba or conda (https://github.com/conda-forge/miniforge)
 mamba create -n detectADAM
 mamba activate detectADAM
-mamba env update --file envs/envs.yml
+mamba env update --file envs/env.yml
 
 # Update config file (if required)
 nano config.yaml
