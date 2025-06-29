@@ -83,6 +83,7 @@ rule convert_paf_to_bed:
     shell:
         """
         awk 'BEGIN {{OFS="\t"}} {{print $6, $8, $9, $1, $12, $5}}' {input.paf_file} > {output.bed_file}
+        rm -rf paf
         """
 
 rule mask_ref:
@@ -95,6 +96,7 @@ rule mask_ref:
     shell:
         """
         bedtools maskfasta -fi {params.references} -bed {input.bed_file} -fo {output.masked_ref} -fullHeader
+        rm -rf bed
         """
 rule index_masked_ref:
     input: 
@@ -290,5 +292,6 @@ rule diamond:
         diamond blastx --query {input} --db {config[diamond_db]} \
         --out {output} --outfmt 6 qseqid sseqid stitle pident length mismatch gapopen qstart qend sstart send evalue bitscore sscinames staxids \
         --threads {threads}
+        rm -rf SRA_folder/{wildcards.sample}
+        rm -rf FASTQ_folder/{wildcards.sample}
         """
-
