@@ -11,7 +11,7 @@
 # **Workflow**
 
 <p align="center">
-  <img src="figures/flowchart.svg" alt="workflow" width="1000"/>
+  <img src="figures/flowchart.png" alt="workflow" width="1000"/>
 </p>
 
 Recommended input for the EVE file for masking is the `.fna` output of the pipeline [detectEVE](https://github.com/thackl/detectEVE).
