@@ -1,5 +1,5 @@
 <p align="left">
-  <img src="figures/detectADAM.png" alt="detectADAM logo" width="600"/>
+  <img src="figures/detectADAM_logo.png" alt="detectADAM logo" width="600"/>
 </p>
 
 # **detectADAM**
