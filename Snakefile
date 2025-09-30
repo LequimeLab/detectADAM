@@ -105,11 +105,12 @@ rule index_masked_ref:
         index=index_files
     log:
         "logs/index_masked_bowtie2.log"
+    threads: 8
     shell:
         """
         mkdir -p logs
         echo "Building index with references: {input.ref}" > {log}
-        bowtie2-build {input.ref} bowtie2_index/index >> {log} 2>&1
+        bowtie2-build --threads {threads} {input.ref} bowtie2_index/index >> {log} 2>&1
         """
         
 rule index_host_bowtie2:
@@ -119,12 +120,14 @@ rule index_host_bowtie2:
         index=index_files
     log:
         "logs/index_host_bowtie2.log"
+    threads: 8
     shell:
         """
         mkdir -p logs
         echo "Building index with references: {params.references}" > {log}
-        bowtie2-build {params.references} bowtie2_index/index >> {log} 2>&1
+        bowtie2-build --threads {threads} {params.references} bowtie2_index/index >> {log} 2>&1
         """
+
 
 rule map_reads_bowtie2_paired:
     input:
