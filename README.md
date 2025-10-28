@@ -22,7 +22,7 @@ Recommended input for the EVE file for masking is the `.fna` output of the pipel
 
 ```bash
 # Download workflow
-git clone https://github.com/CelineBos/detectADAM
+git clone https://github.com/LequimeLab/detectADAM
 cd detectADAM
 
 # Install dependencies via mamba or conda (https://github.com/conda-forge/miniforge)
