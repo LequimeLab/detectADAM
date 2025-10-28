@@ -67,7 +67,7 @@ Should you not have a diamond database in use with taxonomic information, please
 
 Have your FASTQ files from another source or predownloaded?
 
-Utilize the correct file structure `FASTQ_files/` and put the correct files names in the user accession list, and the pipeline will run as normal, skipping the downloading step.
+Utilize the correct file structure `FASTQ_files/` and put the correct file names in the user accession list, and the pipeline will run as normal, skipping the downloading step.
 
 Ensure that you follow the `_1` and `_2` naming convention for pair end files. 
 
